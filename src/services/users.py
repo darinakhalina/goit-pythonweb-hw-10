@@ -5,6 +5,7 @@ from libgravatar import Gravatar
 from src.repository.users import UserRepository
 from src.schemas.users import UserCreate
 
+
 class HTTPNotFoundException(HTTPException):
     def __init__(self, detail: str | None = None) -> None:
         super().__init__(

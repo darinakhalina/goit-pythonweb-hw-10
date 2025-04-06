@@ -9,19 +9,19 @@ from src.services.auth import get_current_user
 from src.services.users import UserService
 from src.services.upload import UploadService, CloudinaryUploadService
 
-routerUsers = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/users", tags=["users"])
 limiter = Limiter(key_func=get_remote_address)
 
 
-@routerUsers.get(
-    "/me", response_model=UserBase, description="Limitted by 10 requests per 1 minute"
+@router.get(
+    "/me", response_model=UserBase, description="Limited to 10 requests per minute."
 )
 @limiter.limit("10/minute")
 async def me(request: Request, user: UserBase = Depends(get_current_user)):
     return user
 
 
-@routerUsers.patch("/avatar", response_model=UserBase)
+@router.patch("/avatar", response_model=UserBase)
 async def update_avatar_user(
     file: UploadFile = File(),
     user: UserBase = Depends(get_current_user),

@@ -121,7 +121,7 @@ async def update_contact_by_id(
     user: UserBase = Depends(get_current_user),
 ):
     try:
-        contacts_service = ContactsService(db,user)
+        contacts_service = ContactsService(db, user)
         contact = await contacts_service.update_by_id(contact_id, body)
         if contact is None:
             raise HTTPException(

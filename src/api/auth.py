@@ -10,6 +10,7 @@ from src.services.users import UserService
 from src.services.email import send_email
 from src.database.db import get_db
 
+
 class HTTPConflictRequestException(HTTPException):
     def __init__(self, detail: str | None = None) -> None:
         super().__init__(
@@ -17,15 +18,16 @@ class HTTPConflictRequestException(HTTPException):
             detail=detail or "Conflict",
         )
 
+
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
-routerAuth = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@routerAuth.post("/register", response_model=UserBase, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=UserBase, status_code=status.HTTP_201_CREATED)
 async def register_user(
     user: UserCreate,
     background_tasks: BackgroundTasks,
@@ -57,7 +59,7 @@ async def register_user(
     return new_user
 
 
-@routerAuth.post("/login", response_model=Token)
+@router.post("/login", response_model=Token)
 async def login_user(
     request_form: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
@@ -83,7 +85,7 @@ async def login_user(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@routerAuth.get("/verify_email/{token}")
+@router.get("/verify_email/{token}")
 async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
     email = await get_email_from_token(token)
     user_service = UserService(db)
