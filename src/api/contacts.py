@@ -11,6 +11,9 @@ from src.schemas.contacts import (
     ContactResponse,
 )
 
+from src.schemas.users import UserBase
+from src.services.auth import get_current_user
+
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
 
@@ -31,9 +34,10 @@ async def get_contacts(
         default=None, description="Maximum number of records to retrieve."
     ),
     db: AsyncSession = Depends(get_db),
+    user: UserBase = Depends(get_current_user),
 ):
     try:
-        contacts_service = ContactsService(db)
+        contacts_service = ContactsService(db, user)
         return await contacts_service.get_all(
             search=search,
             birthdays_within_days=birthdays_within_days,
@@ -88,9 +92,10 @@ async def get_contact_by_id(
 async def create_contact(
     body: ContactBase,
     db: AsyncSession = Depends(get_db),
+    user: UserBase = Depends(get_current_user),
 ):
     try:
-        contacts_service = ContactsService(db)
+        contacts_service = ContactsService(db, user)
         return await contacts_service.create(body)
 
     except SQLAlchemyError as e:
@@ -113,9 +118,10 @@ async def update_contact_by_id(
     body: ContactUpdate,
     contact_id: int,
     db: AsyncSession = Depends(get_db),
+    user: UserBase = Depends(get_current_user),
 ):
     try:
-        contacts_service = ContactsService(db)
+        contacts_service = ContactsService(db,user)
         contact = await contacts_service.update_by_id(contact_id, body)
         if contact is None:
             raise HTTPException(
@@ -141,9 +147,10 @@ async def update_contact_by_id(
 async def delete_contact_by_id(
     contact_id: int,
     db: AsyncSession = Depends(get_db),
+    user: UserBase = Depends(get_current_user),
 ):
     try:
-        contacts_service = ContactsService(db)
+        contacts_service = ContactsService(db, user)
         contact = await contacts_service.get_by_id(contact_id)
         if contact is None:
             raise HTTPException(
