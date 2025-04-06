@@ -6,13 +6,13 @@ from sqlalchemy.sql.expression import or_, and_, func
 
 from src.database.models import Contact
 from src.schemas.contacts import ContactBase, ContactUpdate
-from src.schemas.users import User
+from src.schemas.users import UserBase
 
 
 class ContactsRepository:
-    current_user: User
+    current_user: UserBase
 
-    def __init__(self, session: AsyncSession, user: User):
+    def __init__(self, session: AsyncSession, user: UserBase):
         self.db = session
         self.current_user = user
 
@@ -96,19 +96,20 @@ class ContactsRepository:
         return contact
 
     async def update(self, contact_id: int, body: ContactUpdate):
-        contact = await self.get_one_or_none(filters=[Contact.id == contact_id])
+        contact = await self.get_contact_by_id(contact_id)
 
-        if contact is None:
-            return None
+        if contact:
+            for key, value in body.model_dump(exclude_unset=True).items():
+                setattr(contact, key, value)
 
-        for key, value in body.model_dump(exclude_unset=True).items():
-            setattr(contact, key, value)
+            await self.db.commit()
+            await self.db.refresh(contact)
+            return contact
 
-        await self.db.commit()
-        await self.db.refresh(contact)
-        return contact
+    async def delete(self, contact_id: int):
+        contact = await self.get_contact_by_id(contact_id)
 
-    async def delete(self, contact: Contact):
-        await self.db.delete(contact)
-        await self.db.commit()
-        return contact
+        if contact:
+            await self.db.delete(contact)
+            await self.db.commit()
+            return contact
