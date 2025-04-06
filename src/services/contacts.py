@@ -2,8 +2,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repository.contacts import ContactsRepository
-from src.database.models import Contact
 from src.schemas.contacts import ContactBase, ContactUpdate
+from src.schemas.users import UserBase
 
 
 class HTTPNotFoundException(HTTPException):
@@ -14,9 +14,21 @@ class HTTPNotFoundException(HTTPException):
         )
 
 
+class HTTPConflictRequestException(HTTPException):
+    def __init__(self, detail: str | None = None) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=detail or "Conflict",
+        )
+
+
 class ContactsService:
-    def __init__(self, db: AsyncSession):
-        self.contacts_repository = ContactsRepository(db)
+    repository: ContactsRepository
+    current_user: UserBase
+
+    def __init__(self, db: AsyncSession, user: UserBase):
+        self.repository = ContactsRepository(db, user)
+        self.current_user = user
 
     async def get_all(
         self,
@@ -26,7 +38,7 @@ class ContactsService:
         limit: int | None = None,
     ):
 
-        return await self.contacts_repository.get_all(
+        return await self.repository.get_all(
             search=search,
             birthdays_within_days=birthdays_within_days,
             skip=skip,
@@ -34,8 +46,7 @@ class ContactsService:
         )
 
     async def get_by_id(self, contact_id: int):
-        filters = [Contact.id == contact_id]
-        contact = await self.contacts_repository.get_one_or_none(filters=filters)
+        contact = await self.repository.get_contact_by_id(contact_id)
 
         if contact is None:
             raise HTTPNotFoundException("Not found")
@@ -43,11 +54,27 @@ class ContactsService:
         return contact
 
     async def create(self, body: ContactBase):
-        return await self.contacts_repository.create(body)
+        contact = await self.repository.get_contact_by_email(body.email)
+
+        if contact:
+            raise HTTPConflictRequestException(
+                "Cannot create contact, email already registered."
+            )
+
+        return await self.repository.create(body)
 
     async def update_by_id(self, contact_id: int, body: ContactUpdate):
-        return await self.contacts_repository.update(contact_id, body)
+        contact = await self.repository.get_contact_by_id(contact_id)
+
+        if not contact:
+            raise HTTPNotFoundException("Not found")
+
+        return await self.repository.update(contact_id, body)
 
     async def delete_by_id(self, contact_id: int):
-        contact = await self.get_by_id(contact_id)
-        return await self.contacts_repository.delete(contact)
+        contact = await self.repository.get_contact_by_id(contact_id)
+
+        if contact is None:
+            raise HTTPNotFoundException("Not found")
+
+        return await self.repository.delete(contact_id)

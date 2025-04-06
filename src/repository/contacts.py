@@ -2,16 +2,19 @@ from typing import List, Any
 from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import or_, func
+from sqlalchemy.sql.expression import or_, and_, func
 
 from src.database.models import Contact
 from src.schemas.contacts import ContactBase, ContactUpdate
+from src.schemas.users import User
 
 
 class ContactsRepository:
+    current_user: User
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession, user: User):
         self.db = session
+        self.current_user = user
 
     async def get_all(
         self,
@@ -57,16 +60,32 @@ class ContactsRepository:
         if limit is not None:
             stmt = stmt.limit(limit)
 
+        stmt = stmt.filter(and_(Contact.user == self.current_user))
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
-    async def get_one_or_none(
+    async def get_contact_by_email(
         self,
-        filters: List[Any] | None = None,
-        order_by: Any = "id",
-    ):
+        email: str,
+    ) -> Contact | None:
         return (
-            await self.db.execute(select(Contact).filter(*filters).order_by(order_by))
+            await self.db.execute(
+                select(Contact).filter(
+                    and_(Contact.email == email, Contact.user == self.current_user)
+                )
+            )
+        ).scalar_one_or_none()
+
+    async def get_contact_by_id(
+        self,
+        contact_id: int,
+    ) -> Contact | None:
+        return (
+            await self.db.execute(
+                select(Contact).filter(
+                    and_(Contact.id == contact_id, Contact.user == self.current_user)
+                )
+            )
         ).scalar_one_or_none()
 
     async def create(self, body: ContactBase):
