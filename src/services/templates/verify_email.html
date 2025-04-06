@@ -7,9 +7,9 @@
 <body>
 <p>Hi {{username}},</p>
 <p>Thank you for signing up for our service.</p>
-<p>Please click the following link to verify your email address:</p>
+<p>Please verify your email:</p>
 <p>
-    <a href="{{host}}api/auth/confirmed_email/{{token}}">
+    <a href="{{host}}api/auth/verify_email/{{token}}">
         Verification
     </a>
 </p>

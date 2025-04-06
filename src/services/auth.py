@@ -10,7 +10,14 @@ from jose import JWTError, jwt
 from src.database.db import get_db
 from src.conf.config import settings
 from src.services.users import UserService
-from src.utils import HTTPUnprocessableEntityException
+
+
+class HTTPUnprocessableEntityException(HTTPException):
+    def __init__(self, detail: str | None = None) -> None:
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=detail or "Unprocessable entity",
+        )
 
 
 class Hash:

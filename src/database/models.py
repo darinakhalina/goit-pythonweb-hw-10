@@ -1,7 +1,6 @@
-from xmlrpc.client import DateTime, Boolean
-from sqlalchemy import Integer, String, Date, Column, ForeignKey
+from sqlalchemy import Integer, String, Date, DateTime, Column, ForeignKey, Boolean
 from sqlalchemy.orm import DeclarativeBase, relationship
-from datetime import datetime
+from sqlalchemy.sql import func
 
 
 class Base(DeclarativeBase):
@@ -28,6 +27,6 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=func.now())
     avatar = Column(String(255), nullable=True)
     confirmed = Column(Boolean, default=False, nullable=True)

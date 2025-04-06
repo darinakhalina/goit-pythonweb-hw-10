@@ -20,7 +20,7 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
   app:
     build: .
-    command: /bin/sh -c 'alembic upgrade head && python main.py'
+    command: ["/usr/local/bin/run.sh"]
     ports:
       - '${PORT}:8000'
     depends_on:
@@ -28,3 +28,4 @@ services:
         condition: service_healthy
     volumes:
       - .:/code
+      - ./migrations:/app/migrations
