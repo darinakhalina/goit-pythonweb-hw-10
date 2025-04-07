@@ -73,6 +73,13 @@ async def login_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    if not user.confirmed:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User is not confirmed",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     password_verified = Hash().verify_password(request_form.password, user.password)
 
     if not password_verified:

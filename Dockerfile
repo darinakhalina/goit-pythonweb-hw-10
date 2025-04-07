@@ -18,21 +18,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Poetry
 RUN pip install poetry
 
-# Copy only dependency files first to leverage Docker cache
 COPY pyproject.toml poetry.lock* /app/
 
-# Install dependencies
 RUN poetry install --no-root --no-interaction --no-ansi
 
-# Copy the rest of the application
 COPY . /app
 
-# Expose FastAPI port
 EXPOSE 8000
 
-# Copy the startup script
 COPY run.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
 
-# Use the startup script as the container's entrypoint
 CMD ["/usr/local/bin/run.sh"]
