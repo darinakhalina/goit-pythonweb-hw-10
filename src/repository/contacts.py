@@ -88,7 +88,7 @@ class ContactsRepository:
         ).scalar_one_or_none()
 
     async def create(self, body: ContactBase):
-        contact = Contact(**body.model_dump())
+        contact = Contact(**body.model_dump(), user_id=self.current_user.id)
         self.db.add(contact)
         await self.db.commit()
         await self.db.refresh(contact)

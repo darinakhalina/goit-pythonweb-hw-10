@@ -63,9 +63,10 @@ async def get_contacts(
 async def get_contact_by_id(
     contact_id: int,
     db: AsyncSession = Depends(get_db),
+    user: UserBase = Depends(get_current_user),
 ):
     try:
-        contacts_service = ContactsService(db)
+        contacts_service = ContactsService(db, user)
         contact = await contacts_service.get_by_id(contact_id)
         if contact is None:
             raise HTTPNotFoundException("Contact not found")
