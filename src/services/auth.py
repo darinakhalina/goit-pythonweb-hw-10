@@ -10,14 +10,10 @@ from jose import JWTError, jwt
 from src.database.db import get_db
 from src.conf.config import settings
 from src.services.users import UserService
-
-
-class HTTPUnprocessableEntityException(HTTPException):
-    def __init__(self, detail: str | None = None) -> None:
-        super().__init__(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=detail or "Unprocessable entity",
-        )
+from src.exceptions.exceptions import (
+    HTTPUnauthorizedException,
+    HTTPUnprocessableEntityException,
+)
 
 
 class Hash:
@@ -59,14 +55,9 @@ def create_token(payload: dict):
 async def get_current_user(
     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    credentials_exception = HTTPUnauthorizedException("Could not validate credentials")
 
     try:
-        # Decode JWT
         payload = jwt.decode(
             token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
         )

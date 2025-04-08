@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Query, Depends, status, Response, HTTPException
+from fastapi import APIRouter, Query, Depends, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -13,6 +13,12 @@ from src.schemas.contacts import (
 
 from src.schemas.users import UserBase
 from src.services.auth import get_current_user
+
+from src.exceptions.exceptions import (
+    HTTPInternalDatabaseException,
+    HTTPInternalUnexpectedException,
+    HTTPNotFoundException,
+)
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
@@ -45,15 +51,9 @@ async def get_contacts(
             limit=limit,
         )
     except SQLAlchemyError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error occurred: {str(e)}",
-        )
+        raise HTTPInternalDatabaseException(str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected error occurred: {str(e)}",
-        )
+        raise HTTPInternalUnexpectedException(str(e))
 
 
 @router.get(
@@ -68,20 +68,12 @@ async def get_contact_by_id(
         contacts_service = ContactsService(db)
         contact = await contacts_service.get_by_id(contact_id)
         if contact is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found"
-            )
+            raise HTTPNotFoundException("Contact not found")
         return contact
     except SQLAlchemyError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error occurred: {str(e)}",
-        )
+        raise HTTPInternalDatabaseException(str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected error occurred: {str(e)}",
-        )
+        raise HTTPInternalUnexpectedException(str(e))
 
 
 @router.post(
@@ -99,15 +91,9 @@ async def create_contact(
         return await contacts_service.create(body)
 
     except SQLAlchemyError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error occurred: {str(e)}",
-        )
+        raise HTTPInternalDatabaseException(str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected error occurred: {str(e)}",
-        )
+        raise HTTPInternalUnexpectedException(str(e))
 
 
 @router.patch(
@@ -124,20 +110,12 @@ async def update_contact_by_id(
         contacts_service = ContactsService(db, user)
         contact = await contacts_service.update_by_id(contact_id, body)
         if contact is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found"
-            )
+            raise HTTPNotFoundException("Contact not found")
         return contact
     except SQLAlchemyError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error occurred: {str(e)}",
-        )
+        raise HTTPInternalDatabaseException(str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected error occurred: {str(e)}",
-        )
+        raise HTTPInternalUnexpectedException(str(e))
 
 
 @router.delete(
@@ -153,20 +131,12 @@ async def delete_contact_by_id(
         contacts_service = ContactsService(db, user)
         contact = await contacts_service.get_by_id(contact_id)
         if contact is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found"
-            )
+            raise HTTPNotFoundException("Contact not found")
 
         await contacts_service.delete_by_id(contact_id)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     except SQLAlchemyError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error occurred: {str(e)}",
-        )
+        raise HTTPInternalDatabaseException(str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected error occurred: {str(e)}",
-        )
+        raise HTTPInternalUnexpectedException(str(e))

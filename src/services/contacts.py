@@ -1,25 +1,12 @@
-from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repository.contacts import ContactsRepository
 from src.schemas.contacts import ContactBase, ContactUpdate
 from src.schemas.users import UserBase
-
-
-class HTTPNotFoundException(HTTPException):
-    def __init__(self, detail: str | None = None) -> None:
-        super().__init__(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=detail or "Not found",
-        )
-
-
-class HTTPConflictRequestException(HTTPException):
-    def __init__(self, detail: str | None = None) -> None:
-        super().__init__(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=detail or "Conflict",
-        )
+from src.exceptions.exceptions import (
+    HTTPNotFoundException,
+    HTTPConflictRequestException,
+)
 
 
 class ContactsService:

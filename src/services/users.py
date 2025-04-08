@@ -1,17 +1,11 @@
-from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from libgravatar import Gravatar
 
 from src.repository.users import UserRepository
 from src.schemas.users import UserCreate
-
-
-class HTTPNotFoundException(HTTPException):
-    def __init__(self, detail: str | None = None) -> None:
-        super().__init__(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=detail or "Not found",
-        )
+from src.exceptions.exceptions import (
+    HTTPNotFoundException,
+)
 
 
 class UserService:
