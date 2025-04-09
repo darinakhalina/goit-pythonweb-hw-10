@@ -624,14 +624,14 @@ files = [
 
 [[package]]
 name = "limits"
-version = "4.6"
+version = "4.7.1"
 description = "Rate limiting utilities"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "limits-4.6-py3-none-any.whl", hash = "sha256:b359ba1318d67c1750024dab2704400aabf2db77bf91a0238761a5e9133f6cb1"},
-    {file = "limits-4.6.tar.gz", hash = "sha256:d1586455e36235909fada4114a4b8a1438feab1f2dd60adac2cacb12b0fb756c"},
+    {file = "limits-4.7.1-py3-none-any.whl", hash = "sha256:484a81f4b60988557c97f7c7f118b4cd9c410f21f783481e9c61d0b3a22bc455"},
+    {file = "limits-4.7.1.tar.gz", hash = "sha256:161ff922efb04d8d95d9983cb8ee75acb145ef7674bf7e1bb8dc6c8d1249cce7"},
 ]
 
 [package.dependencies]
